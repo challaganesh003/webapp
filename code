@@ -1,0 +1,51 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+      version = "3.84.0"
+    }
+  }
+}
+
+provider "azurerm" {
+    subscription_id = "e7d1c4af-8fa7-4261-897b-6a1e73d2928e"
+    tenant_id = "5a344d3a-7f3c-4153-a540-c222305328f1"
+    client_id = "ce5b9764-7bf3-48a4-a0c8-e0335bd211e9"
+    client_secret = "Lkc8Q~n8yVRFqGJ2F5UC3NcB8GQEop6XI52RgbOr"
+  features{}
+}
+
+locals {
+  resource_group_name  = "gani"
+  location = "West Europe"
+}
+
+resource "azurerm_resource_group" "gani" {
+    name = local.resource_group_name
+    location = local.location
+  
+}
+
+resource "azurerm_service_plan" "serplan" {
+  name                = "ser-plan"
+  resource_group_name = local.resource_group_name
+  location            = local.location
+  sku_name            = "B1"
+  os_type             = "Windows"
+  depends_on = [ azurerm_resource_group.gani ]
+}
+
+resource "azurerm_windows_web_app" "webapp6301" {
+  name                = "webapp6301"
+  resource_group_name = local.resource_group_name
+  location            = local.location
+  service_plan_id     = azurerm_service_plan.serplan.id
+
+  site_config {
+    application_stack {
+      current_stack = "dotnet"
+      dotnet_version = "v6.0"
+    }
+  }
+  depends_on = [ azurerm_service_plan.serplan ]
+}
